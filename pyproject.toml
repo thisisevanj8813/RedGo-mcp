@@ -1,0 +1,29 @@
+[project]
+name = "redgo-mcp"
+version = "0.1.0"
+description = "为 AI agent 而生的小红书数据采集 MCP server（只读、结构化、抗封内建）"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "EJ" }]
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.10.0",
+    "playwright>=1.49.0",
+    "pydantic>=2.7.0",
+]
+
+[project.scripts]
+redgo = "redgo.cli:main"
+redgo-mcp = "redgo.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["redgo"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]

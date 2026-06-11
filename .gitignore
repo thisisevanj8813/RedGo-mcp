@@ -1,0 +1,31 @@
+# ===== 内部图纸不上公开仓库（隐私体检 2026-06-11：含账号风控经历与完整抗封策略）=====
+docs/
+启动prompt*.md
+
+# ===== 隐私红线：登录态/账号数据绝不进仓库 =====
+# 配额账本与会话指纹（默认在 ~/.redgo/，此处防误放进仓库的副本）
+state.json
+*.state.json
+# Chrome profile（含 cookie、登录态）
+chrome-profile/
+.redgo/
+# 任何 cookie / 抓取样本落盘
+*cookie*
+*.har
+samples/
+*.dump.json
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# ===== 系统/编辑器 =====
+.DS_Store
+.idea/
+.vscode/
