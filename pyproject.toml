@@ -1,6 +1,6 @@
 [project]
 name = "redgo-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "为 AI agent 而生的小红书数据采集 MCP server（只读、结构化、抗封内建）"
 readme = "README.md"
 license = { text = "MIT" }

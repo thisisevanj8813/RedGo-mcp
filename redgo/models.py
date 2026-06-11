@@ -6,6 +6,7 @@ tool 直接返回 BaseModel → FastMCP 自动生成 output schema 并填 struct
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 
 from pydantic import BaseModel, Field
@@ -49,6 +50,50 @@ def normalize_timestamp(raw: object) -> str:
     return datetime.fromtimestamp(ms / 1000, tz=_CST).isoformat(timespec="seconds")
 
 
+_RELATIVE_RE = re.compile(r"^(\d+)\s*(分钟|小时|天)前$")
+
+
+def normalize_publish_date(raw: object, now: datetime | None = None) -> str:
+    """列表卡片的发布时间角标文本 → ISO 8601 日期（YYYY-MM-DD）。
+
+    搜索/列表接口不返回时间戳，只有展示文本（"3天前"/"昨天"/"06-02"/"2024-12-01"），
+    所以只能归一到日期粒度（精确时刻要 get_note）。无法识别的文本返回空串，不瞎猜。
+    """
+    if not isinstance(raw, str):
+        return ""
+    s = raw.strip()
+    if not s:
+        return ""
+    now = now or datetime.now(tz=_CST)
+    fixed = {"刚刚": 0, "今天": 0, "昨天": 1, "前天": 2}
+    if s in fixed:
+        return (now - timedelta(days=fixed[s])).date().isoformat()
+    m = _RELATIVE_RE.match(s)
+    if m:
+        n, unit = int(m.group(1)), m.group(2)
+        delta = {"分钟": timedelta(minutes=n), "小时": timedelta(hours=n), "天": timedelta(days=n)}
+        return (now - delta[unit]).date().isoformat()
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", s):
+        try:
+            datetime.strptime(s, "%Y-%m-%d")
+        except ValueError:
+            return ""
+        return s
+    if re.fullmatch(r"\d{2}-\d{2}", s):
+        # 角标省略年份 → 当年；若日期在未来说明是去年的
+        try:
+            d = datetime.strptime(f"{now.year}-{s}", "%Y-%m-%d").date()
+        except ValueError:
+            return ""
+        if d > now.date():
+            try:
+                d = d.replace(year=now.year - 1)
+            except ValueError:  # 去年没有 2/29
+                return ""
+        return d.isoformat()
+    return ""
+
+
 class Note(BaseModel):
     """搜索结果里的一条笔记（列表卡片粒度）。"""
 
@@ -61,6 +106,13 @@ class Note(BaseModel):
     author_id: str = ""
     author_nickname: str = ""
     liked_count: int = Field(default=0, description="点赞数，已归一化为整数")
+    published_at: str = Field(
+        default="",
+        description=(
+            "发布时间，ISO 8601 日期（YYYY-MM-DD）。来源是列表卡片的时间角标，"
+            "精度只到天；精确到时分秒要用 get_note。空串=卡片没带时间角标"
+        ),
+    )
     url: str = Field(default="", description="可直接打开的笔记网页链接（已带 xsec_token）")
 
 

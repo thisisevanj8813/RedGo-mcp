@@ -255,6 +255,7 @@ async def search_notes(keyword: str, page: int = 1, ctx: Context = None) -> Sear
     """搜索小红书笔记，返回结构化笔记列表。
 
     每条结果带 xsec_token——后续查看笔记详情/评论必须透传它，不可凭 note_id 构造。
+    每条结果带 published_at（发布日期，精度到天）；要精确时刻用 get_note。
     """
     if page != 1:
         raise RedGoError(

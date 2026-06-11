@@ -84,6 +84,7 @@ RedGo 适合**个人、低频、给自己的 AI 喂料**的场景。下面几个
     "xsec_token": "AB...",
     "title": "深圳喜欢的两家咖啡店☕️",
     "liked_count": 12000,
+    "published_at": "2026-06-02",
     "url": "https://www.xiaohongshu.com/explore/65a1...?xsec_token=..."
   }]
 }

@@ -14,6 +14,7 @@ from .models import (
     Note,
     NoteDetail,
     normalize_count,
+    normalize_publish_date,
     normalize_timestamp,
 )
 
@@ -48,6 +49,14 @@ def profile_url(user_id: str, xsec_token: str) -> str:
     )
 
 
+def publish_date_from_card(card: dict) -> str:
+    """卡片 corner_tag_info 里的 publish_time 角标 → ISO 日期。没有该角标返回空串。"""
+    for tag in g(card, "corner_tag_info") or []:
+        if g(tag, "type") == "publish_time":
+            return normalize_publish_date(g(tag, "text", ""))
+    return ""
+
+
 def note_from_search_item(item: dict) -> Note | None:
     """搜索结果 item（API snake_case）→ Note。非笔记类卡片返回 None。"""
     if g(item, "model_type") != "note":
@@ -64,6 +73,7 @@ def note_from_search_item(item: dict) -> Note | None:
         author_id=g(user, "user_id", "") or "",
         author_nickname=g(user, "nickname") or g(user, "nick_name") or "",
         liked_count=normalize_count(g(g(card, "interact_info", {}) or {}, "liked_count")),
+        published_at=publish_date_from_card(card),
         url=note_url(nid, token),
     )
 
@@ -83,6 +93,7 @@ def note_from_posted_item(item: dict) -> Note:
         author_id=g(user, "user_id", "") or "",
         author_nickname=g(user, "nickname") or g(user, "nick_name") or "",
         liked_count=normalize_count(g(g(card, "interact_info", {}) or {}, "liked_count")),
+        published_at=publish_date_from_card(card),
         url=note_url(nid, token, source="pc_user"),
     )
 
